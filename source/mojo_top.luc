@@ -1,0 +1,437 @@
+module mojo_top (
+    input clk,              // 50MHz clock
+    input rst_n,            // reset button (active low)
+    output io_seg [8],      // 7-segment LEDs on IO Shield
+    output io_sel [4],      // Digit select on IO Shield
+    output spi_miso,        // AVR SPI MISO
+    output spi_channel [4], // AVR general purpose pins (used by default to select ADC channel)
+    output avr_rx,          // AVR RX (FPGA TX)
+    output io_led[3][8],
+    output r[8],
+    output c[8],
+    output rr[8],
+
+
+    input io_button [5]   // 5 buttons on IO Shield
+
+    
+  ) {
+  
+  sig rst;                  // reset signal
+  
+  //display display(.clk(clk), .rst(rst));    //display matrix 1   
+  
+  sig crazy[8][8];
+  sig crazy2[8][8];
+  
+  sig a[8];
+  sig aa[8];
+  sig ag[8];
+  sig b[8];
+  sig bb[8];
+  sig bg[8];
+  
+  sig cur[8];
+  
+  sig al[8];
+  sig bl[8];
+  sig alufn[6];
+  sig alu[8];
+  sig score[8];
+  const X = 1;
+
+
+  
+  dff gcounter[27](.clk(clk), .rst(rst));
+  dff ggcounter[8](.clk(clk), .rst(rst),#INIT(8b10000000));
+  dff gggcounter[8](.clk(clk), .rst(rst),#INIT(8b10000000));
+  dff loob[36](.clk(clk), .rst(rst),#INIT(36b0100001111010101010000100010101010101));
+  dff loob2[36](.clk(clk), .rst(rst),#INIT(36b101000111011010111111000100010000010));
+  dff in[4](.clk(clk), .rst(rst),#INIT(4b0000));
+  dff in2[4](.clk(clk), .rst(rst),#INIT(4b0000));
+    dff lol[4](.clk(clk), .rst(rst),#INIT(4b0000));
+  dff lol2[4](.clk(clk), .rst(rst),#INIT(4b0000));
+    dff lol3[4](.clk(clk), .rst(rst),#INIT(4b0000));
+  dff lol4[4](.clk(clk), .rst(rst),#INIT(4b0000));
+  
+
+
+  
+  .clk(clk) {
+    // The reset conditioner is used to synchronize the reset signal to the FPGA
+    // clock. This ensures the entire FPGA comes out of reset at the same time.
+    reset_conditioner reset_cond;
+    fsm state = {START,A,B,C,D,E,F,G,H};
+    
+    .rst(rst){    
+     multi_seven_seg seg;
+      }
+  }  
+   alu alu1;
+  
+  always {
+  seg.values = {4h0, 4h0, 4h0, 4h0};  
+
+   if  (lol.q == 0) {
+       seg.values[0] = 4h0;
+    } 
+      else if (lol.q == 1) {
+       seg.values[0] = 4h1;
+    }
+    else if (lol.q == 2) {
+       seg.values[0] = 4h2;
+    }
+    else if (lol.q == 3) {
+       seg.values[0] = 4h3;
+    }
+    else if (lol.q == 4) {
+       seg.values[0] = 4h4;
+    }
+    else if (lol.q == 5) {
+       seg.values[0] = 4h5;
+    }
+    else if (lol.q == 6) {
+       seg.values[0] = 4h6;
+    }
+    else if (lol.q == 7) {
+       seg.values[0] = 4h7;
+    }
+    else if (lol.q == 8) {
+       seg.values[0] = 4h8;
+    }
+    else if (lol.q == 9) {
+       seg.values[0] = 4h9;
+    }
+    else if (lol.q == 10) {
+       lol.d = 0;
+      lol2.d = lol2.q +1;
+    }
+    
+    if  (lol2.q == 0) {
+       seg.values[1] = 4h0;
+    } 
+      else if (lol2.q == 1) {
+       seg.values[1] = 4h1;
+    }
+    else if (lol2.q == 2) {
+       seg.values[1] = 4h2;
+    }
+    else if (lol2.q == 3) {
+       seg.values[1] = 4h3;
+    }
+    else if (lol2.q == 4) {
+       seg.values[1] = 4h4;
+    }
+    else if (lol2.q == 5) {
+       seg.values[1] = 4h5;
+    }
+    else if (lol2.q == 6) {
+       seg.values[1] = 4h6;
+    }
+    else if (lol2.q == 7) {
+       seg.values[1] = 4h7;
+    }
+    else if (lol2.q == 8) {
+       seg.values[1] = 4h8;
+    }
+    else if (lol2.q == 9) {
+       seg.values[1] = 4h9;
+    }
+    else if (lol2.q == 10) {
+       lol2.d = 0;
+      //lol3.d = lol3.q + 1;
+    }
+    
+    if  (lol3.q == 0) {
+       seg.values[2] = 4h0;
+    } 
+      else if (lol3.q == 1) {
+       seg.values[2] = 4h1;
+    }
+    else if (lol3.q == 2) {
+       seg.values[2] = 4h2;
+    }
+    else if (lol3.q == 3) {
+       seg.values[2] = 4h3;
+    }
+    else if (lol3.q == 4) {
+       seg.values[2] = 4h4;
+    }
+    else if (lol3.q == 5) {
+       seg.values[2] = 4h5;
+    }
+    else if (lol3.q == 6) {
+       seg.values[2] = 4h6;
+    }
+    else if (lol3.q == 7) {
+       seg.values[2] = 4h7;
+    }
+    else if (lol3.q == 8) {
+       seg.values[2] = 4h8;
+    }
+    else if (lol3.q == 9) {
+       seg.values[2] = 4h9;
+    }
+    else if (lol3.q == 10) {
+       lol3.d = 0;
+     // lol4.d = lol4.q +1;
+      
+    }
+     
+    if  (lol4.q == 0) {
+       seg.values[3] = 4h0;
+    } 
+      else if (lol4.q == 1) {
+       seg.values[3] = 4h1;
+    }
+    else if (lol4.q == 2) {
+       seg.values[3] = 4h2;
+    }
+    else if (lol4.q == 3) {
+       seg.values[3] = 4h3;
+    }
+    else if (lol4.q == 4) {
+       seg.values[3] = 4h4;
+    }
+    else if (lol4.q == 5) {
+       seg.values[3] = 4h5;
+    }
+    else if (lol4.q == 6) {
+       seg.values[3] = 4h6;
+    }
+    else if (lol4.q == 7) {
+       seg.values[3] = 4h7;
+    }
+    else if (lol4.q == 8) {
+       seg.values[3] = 4h8;
+    }
+    else if (lol4.q == 9) {
+       seg.values[3] = 4h9;
+    }
+    else if (lol4.q == 10) {
+       lol4.d = 0;
+      
+    }
+    
+
+      
+     
+
+    gcounter.d = gcounter.q + 1;
+    al = 8b1111111;
+    bl = 8b1111111;
+    score = 8b00000000;
+    alufn = 8b0000000;
+    
+    alu1.a = al;
+    alu1.b = bl;
+    alu1.alufn = alufn;
+    alu = alu1.out;
+    alu = alu1.out;
+    
+    spi_miso = bz;          // not using SPI
+    spi_channel = bzzzz;    // not using flags
+    avr_rx = bz;            // not using serial port
+    
+    io_led = 3x{{8h00}};    // turn LEDs off
+    //io_seg = 8hff;          // turn segments off
+    //io_sel = 4hf;           // select no digits
+    
+    
+    //seg.values = {4h1, 4h1, 4h1, 4h1};
+    io_seg = ~seg.seg;          // connect segments to the driver
+    io_sel = ~seg.sel;           // connect digits select to the driver    
+
+    crazy[0] = 2;
+    crazy[1] = 3;
+    crazy[2] = 0;
+    crazy[3] = 5;
+    crazy[4] = 6;
+    crazy[5] = 7;
+    crazy[6] = 2;
+    crazy[7] = 3;
+    
+    crazy2[0] = 4;
+    crazy2[1] = 2;
+    crazy2[2] = 5;
+    crazy2[3] = 1;
+    crazy2[4] = 2;
+    crazy2[5] = 3;
+    crazy2[6] = 7;
+    crazy2[7] = 1;
+
+
+ 
+
+    aa = 8b11111111;
+    ag = 8b11111111;
+    bb = 8b11111111;
+    bg = 8b11111111;
+
+     
+    if(gcounter.q[5:4] == 2b11) {
+    c = ggcounter.q;
+    if (loob.q[0] == b0) {
+      
+      
+      ag[crazy[in.q]] = 0;
+    
+          } else {
+         
+      aa[crazy[in.q]] = 0;
+    } 
+      r = ag;
+      rr =  aa;
+    } 
+      
+    else if(gcounter.q[5:4] == 2b01) {
+    c = gggcounter.q;      
+    if (loob2.q[0] == b0) {
+      
+      
+      bg[crazy2[in.q]] = 0;
+    } else {
+
+      bb[crazy2[in.q]] = 0;
+    }
+     r = bg;
+      rr = bb;
+    }
+      
+    else if(gcounter.q[5:4] == 2b10) {
+    a = ggcounter.q;
+    b = gggcounter.q;
+    c = 8b00000001;      
+       if (loob.q[0] == b0) {
+      
+      
+      ag[crazy[in.q]] = 0;
+    
+          } else {
+         
+      aa[crazy[in.q]] = 0;
+    } 
+      if (loob2.q[0] == b0) {
+      
+      
+      bg[crazy2[in.q]] = 0;
+    } else {
+
+      bb[crazy2[in.q]] = 0;
+    }
+    
+     
+      case (state.q) { 
+      state.START: cur = b00000000; r = b111111111; rr = 8b00000000;          
+          if(io_button[1]==1 ){state.d = state.B; score = 8b00000000; lol.d = 0; lol2.d = 0; lol3.d = 0 ; }
+      state.A:           
+       rr = 8b11111111; cur = b11111110; r = cur; if(io_button[3]==1 ){state.d = state.B;} else if(io_button[0]==1 ){ state.d = state.H; }  
+        if(gggcounter.q == 8b00000001 || ggcounter.q == 8b00000001) {
+          if(((ag != 8b11111111 && a == 8b00000001 && ag != cur)||(bg != 8b11111111 && b == 8b00000001 && bg != cur)) ){ state.d = state.START; } 
+          
+          else if(((ag != 8b11111111 && a == 8b00000001 && ag == cur)||(bg != 8b11111111 && b == 8b00000001 && bg == cur)) ){ alu1.alufn = 6b0; alu1.a = score; alu1.b = X; score = alu1.out; lol.d = lol.q +1;} 
+          else if(((aa == 8b11111111 && a == 8b00000001 && aa == cur)||(bb == 8b11111111 && b == 8b00000001 && bb == cur)) ){ alu1.alufn = 6b1; alu1.a = score; alu1.b = X; score = alu1.out; lol.d = lol.q -1;}
+      }
+          state.B:   rr = 8b11111111; cur = b11111101; r = cur; if(io_button[2]==1 ){state.d = state.C;} else if(io_button[4]==1 ){ state.d = state.A; } 
+       if(gggcounter.q == 8b00000001 || ggcounter.q == 8b00000001) {
+          if(((ag != 8b11111111 && a == 8b00000001 && ag != cur)||(bg != 8b11111111 && b == 8b00000001 && bg != cur)) ){ state.d = state.START; } 
+          else if(((ag != 8b11111111 && a == 8b00000001 && ag == cur)||(bg != 8b11111111 && b == 8b00000001 && bg == cur)) ){ alu1.alufn = 6b0; alu1.a = score; alu1.b = X; score = alu1.out; lol.d = lol.q +1;} 
+          else if(((aa == 8b11111111 && a == 8b00000001 && aa == cur)||(bb == 8b11111111 && b == 8b00000001 && bb == cur)) ){ alu1.alufn = 6b1; alu1.a = score; alu1.b = X; score = alu1.out; lol.d = lol.q -1;}
+     }
+           state.C:   rr = 8b11111111; cur = b11111011; r = cur; if(io_button[3]==1 ){state.d = state.D;} else if(io_button[0]==1 ){ state.d = state.B; } 
+       if(gggcounter.q == 8b00000001 || ggcounter.q == 8b00000001) {
+           if(((ag != 8b11111111 && a == 8b00000001 && ag != cur)||(bg != 8b11111111 && b == 8b00000001 && bg != cur)) ){ state.d = state.START; } 
+          else if(((ag != 8b11111111 && a == 8b00000001 && ag == cur)||(bg != 8b11111111 && b == 8b00000001 && bg == cur)) ){ alu1.alufn = 6b0; alu1.a = score; alu1.b = X; score = alu1.out; lol.d = lol.q +1;} 
+          else if(((aa == 8b11111111 && a == 8b00000001 && aa == cur)||(bb == 8b11111111 && b == 8b00000001 && bb == cur)) ){ alu1.alufn = 6b1; alu1.a = score; alu1.b = X; score = alu1.out; lol.d = lol.q -1;}
+     }
+           state.D:  rr = 8b11111111; cur = b11110111; r = cur; if(io_button[2]==1 ){state.d = state.E; } else if(io_button[4]==1 ){ state.d = state.C; } 
+       if(gggcounter.q == 8b00000001 || ggcounter.q == 8b00000001) {
+           if(((ag != 8b11111111 && a == 8b00000001 && ag != cur)||(bg != 8b11111111 && b == 8b00000001 && bg != cur)) ){ state.d = state.START; }
+           else if(((ag != 8b11111111 && a == 8b00000001 && ag == cur)||(bg != 8b11111111 && b == 8b00000001 && bg == cur)) ){ alu1.alufn = 6b0; alu1.a = score; alu1.b = X; score = alu1.out; lol.d = lol.q +1;} 
+          else if(((aa == 8b11111111 && a == 8b00000001 && aa == cur)||(bb == 8b11111111 && b == 8b00000001 && bb == cur)) ){  alu1.alufn = 6b1; alu1.a = score; alu1.b = X; score = alu1.out; lol.d = lol.q -1;}
+      }
+          state.E: rr = 8b11111111; cur = b11101111; r = cur; if(io_button[3]==1 ){state.d = state.F; } else if(io_button[0]==1 ){ state.d = state.D; } 
+       if(gggcounter.q == 8b00000001 || ggcounter.q == 8b00000001) {
+          if(((ag != 8b11111111 && a == 8b00000001 && ag != cur)||(bg != 8b11111111 && b == 8b00000001 && bg != cur)) ){ state.d = state.START; } 
+          else if(((ag != 8b11111111 && a == 8b00000001 && ag == cur)||(bg != 8b11111111 && b == 8b00000001 && bg == cur)) ){ alu1.alufn = 6b0; alu1.a = score; alu1.b = X; score = alu1.out; lol.d = lol.q +1;} 
+          else if(((aa == 8b11111111 && a == 8b00000001 && aa == cur)||(bb == 8b11111111 && b == 8b00000001 && bb == cur)) ){ alu1.alufn = 6b1; alu1.a = score; alu1.b = X; score = alu1.out; lol.d = lol.q -1;}
+          }
+           state.F:   rr = 8b11111111; cur = b11011111; r = cur; if(io_button[2]==1 ){state.d = state.G; } else if(io_button[4]==1 ){ state.d = state.E; } 
+       if(gggcounter.q == 8b00000001 || ggcounter.q == 8b00000001) {
+           if(((ag != 8b11111111 && a == 8b00000001 && ag != cur)||(bg != 8b11111111 && b == 8b00000001 && bg != cur)) ){ state.d = state.START; } 
+          else if(((ag != 8b11111111 && a == 8b00000001 && ag == cur)||(bg != 8b11111111 && b == 8b00000001 && bg == cur)) ){  alu1.alufn = 6b0; alu1.a = score; alu1.b = X; score = alu1.out; lol.d = lol.q +1;}
+           else if(((aa == 8b11111111 && a == 8b00000001 && aa == cur)||(bb == 8b11111111 && b == 8b00000001 && bb == cur)) ){ alu1.alufn = 6b1; alu1.a = score; alu1.b = X; score = alu1.out; lol.d = lol.q -1; }
+          }
+           state.G:  rr = 8b11111111; cur = b10111111; r = cur; if(io_button[3]==1 ){state.d = state.H; } else if(io_button[0]==1 ){ state.d = state.F; } 
+    if(gggcounter.q == 8b00000001 || ggcounter.q == 8b00000001) {
+              if(((ag != 8b11111111 && a == 8b00000001 && ag != cur)||(bg != 8b11111111 && b == 8b00000001 && bg != cur)) ){ state.d = state.START; } 
+          else if(((ag != 8b11111111 && a == 8b00000001 && ag == cur)||(bg != 8b11111111 && b == 8b00000001 && bg == cur)) ){ alu1.alufn = 6b0; alu1.a = score; alu1.b = X; score = alu1.out; lol.d = lol.q +1;} 
+          else if(((aa == 8b11111111 && a == 8b00000001 && aa == cur)||(bb == 8b11111111 && b == 8b00000001 && bb == cur)) ){ alu1.alufn = 6b1; alu1.a = score; alu1.b = X; score = alu1.out; lol.d = lol.q -1;}
+          }
+           state.H:  rr = 8b11111111; cur = b01111111; r = cur; if(io_button[2]==1 ){state.d = state.A;} else if(io_button[4]==1 ){ state.d = state.G;} 
+      if(gggcounter.q == 8b00000001 || ggcounter.q == 8b00000001) {
+            if(((ag != 8b11111111 && a == 8b00000001 && ag != cur)||(bg != 8b11111111 && b == 8b00000001 && bg != cur)) ){ state.d = state.START; } 
+          else if(((ag != 8b11111111 && a == 8b00000001 && ag == cur)||(bg != 8b11111111 && b == 8b00000001 && bg == cur)) ){ alu1.alufn = 6b0; alu1.a = score; alu1.b = X; score = alu1.out;lol.d = lol.q +1;} 
+          else if(((aa == 8b11111111 && a == 8b00000001 && aa == cur)||(bb == 8b11111111 && b == 8b00000001 && bb == cur)) ){ alu1.alufn = 6b1; alu1.a = score; alu1.b = X; score = alu1.out; lol.d = lol.q -1;}
+          }
+          default: r = b00000000; rr = b000000000;
+      }
+      
+    }
+    
+    else {
+    c = 8b00000000;
+    r = 8b11111111;
+    rr = 8b11111111;
+    }     
+
+   if (gcounter.q[24:0] == 25b1000000000000000000000000) {
+    ggcounter.d = ggcounter.q >> 1;
+   
+      if(ggcounter.q == 8b00000000) {
+      ggcounter.d = 8b10000000;
+       lol.d = lol.q +1;
+        loob.d = loob.q >> 1;
+        in.d = in.q + 1;
+        if (loob.q == 36b000000000000000000000000000000000000) {
+            loob.d = 36b0100001111010101010000100010101010101;       
+        }
+        
+        if (in.q == 4b1000){
+         in.d = 4b0000;
+        }
+       
+      }
+    } 
+    
+     if (gcounter.q[23:0] == 24b100000000000000000000000) {
+    gggcounter.d = gggcounter.q >> 1;
+    
+      if(gggcounter.q == 8b00000000) {
+      gggcounter.d = 8b10000000;
+        lol.d = lol.q +1;
+        loob2.d = loob2.q >> 1;
+        in2.d = in2.q + 1;
+        if (loob.q == 36b000000000000000000000000000000000000) {
+            loob.d = 36b101000111011010111111000100010000010;
+          
+        }
+       if (in2.q == 4b1000){
+         in2.d = 4b0000;
+        }
+        
+      }
+    } 
+
+    
+
+    reset_cond.in = ~rst_n; // input raw inverted reset signal
+    rst = reset_cond.out;   // conditioned reset
+
+      
+
+    
+   
+
+  }
+}
